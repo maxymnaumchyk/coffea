@@ -142,6 +142,7 @@ class UprootSourceMapping(BaseSourceMapping):
     def _extract_base_form(cls, tree, iteritems_options={}):
         branch_forms = {}
         for key, branch in tree.iteritems(**iteritems_options):
+            # print(branch)
             if key in branch_forms:
                 warnings.warn(
                     f"Found duplicate branch {key} in {tree}, taking first instance"
@@ -186,6 +187,8 @@ class UprootSourceMapping(BaseSourceMapping):
                 )
                 continue
             branch_forms[key] = form
+
+        # print('branch_forms.values():', branch_forms.values())
 
         return {
             "class": "RecordArray",

@@ -736,7 +736,7 @@ class NanoEventsFactory:
             base_form["parameters"]["metadata"] = metadata
         if not callable(schemaclass):
             raise ValueError("Invalid schemaclass type")
-        schema = schemaclass(base_form)
+        schema = schemaclass(base_form, mapping, tuple_to_key(partition_key), buffer_key=partial(_key_formatter, tuple_to_key(partition_key)))
         if not isinstance(schema, BaseSchema):
             raise RuntimeError("Invalid schema type")
         return cls(

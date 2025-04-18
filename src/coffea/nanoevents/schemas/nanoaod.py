@@ -1,7 +1,9 @@
 import warnings
+import awkward
 
 from coffea.nanoevents import transforms
 from coffea.nanoevents.schemas.base import BaseSchema, zip_forms
+from coffea.nanoevents.util import key_to_tuple
 
 
 def _key_formatter(prefix, form_key, form, attribute):
@@ -12,6 +14,11 @@ def _key_formatter(prefix, form_key, form, attribute):
 
 # REMOVE ABOVE
 
+def key_length(partition_key):
+    # uuid, treepath, entryrange = key_to_tuple(self._partition_key)
+    uuid, treepath, entryrange = key_to_tuple(partition_key)
+    start, stop = (int(x) for x in entryrange.split("-"))
+    return stop - start
 
 class NanoAODSchema(BaseSchema):
     """NanoAOD schema builder
@@ -166,7 +173,7 @@ class NanoAODSchema(BaseSchema):
     }
     """Special arrays, where the callable and input arrays are specified in the value"""
 
-    def __init__(self, base_form, version="latest"):
+    def __init__(self, base_form, mapping, partition_key, buffer_key, version="latest"):
         super().__init__(base_form)
         self._version = version
         self.cross_references = dict(self.all_cross_references)
@@ -178,10 +185,17 @@ class NanoAODSchema(BaseSchema):
             if int(version) < 6:
                 del self.cross_references["FsrPhoton_muonIdx"]
                 del self.cross_references["Muon_fsrPhotonIdx"]
-        self._form["fields"], self._form["contents"] = self._build_collections(
-            self._form["fields"], self._form["contents"]
-        )
-        self._form["parameters"]["metadata"]["version"] = self._version
+
+        key_len = key_length(partition_key)
+        preconstructed_array = awkward.from_buffers(base_form, key_len, mapping, buffer_key)
+        print('buffer_key:', buffer_key)
+        print('mapping: ', mapping.__len__())
+        print('preconstructed_array =', preconstructed_array)
+        breakpoint()
+        # self._form["fields"], self._form["contents"] = self._build_collections(
+        #     self._form["fields"], self._form["contents"]
+        # )
+        # self._form["parameters"]["metadata"]["version"] = self._version
 
     @classmethod
     def v7(cls, base_form):
